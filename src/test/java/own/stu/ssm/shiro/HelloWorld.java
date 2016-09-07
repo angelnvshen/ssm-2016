@@ -54,21 +54,33 @@ public class HelloWorld {
     @Test
     public void testHasRole(){
 //        Subject subject = getSubject("shiro_role.ini","admin","123456");
-        Subject subject = getSubject("shiro_role.ini","qin","123456");
+        Subject subject = getSubject("shiro_role.ini", "qin", "123456");
         System.out.println(subject.hasRole("admin")?"has Admin role":"has not Admin role");
         boolean [] hasRoles = subject.hasRoles(Arrays.asList("admin","guest"));
         System.out.println(hasRoles[0]?"has Admin role":"has not Admin role");
-        System.out.println(hasRoles[1]?"has Guest role":"has not Guest role");
+        System.out.println(hasRoles[1] ? "has Guest role" : "has not Guest role");
 
-        System.out.println(subject.hasAllRoles(Arrays.asList("admin", "guest"))?"has all roles ":"has not all roles");
+        System.out.println(subject.hasAllRoles(Arrays.asList("admin", "guest")) ? "has all roles " : "has not all roles");
     }
 
     @Test
     public void tesCheckRole(){
-        Subject subject = getSubject("shiro_role.ini","admin","123456");
+        Subject subject = getSubject("shiro_role.ini", "admin", "123456");
 //        Subject subject = getSubject("shiro_role.ini","qin","123456");
         subject.checkRole("admin");
-        subject.checkRoles(Arrays.asList("admin","guest"));
+        subject.checkRoles(Arrays.asList("admin", "guest"));
+    }
+
+    @Test
+    public void testisPermitted(){
+        Subject subject = getSubject("shiro_permission.ini", "admin", "123456");
+        System.out.println(subject.isPermitted("user:select")?"has permission user:select "
+                :"has no permission user:select");
+
+        boolean [] result = subject.isPermitted("user:update", "user:view");
+        System.out.println(result[0]?"update ":" update not");
+        System.out.println(result[1]?"view ":" view not");
+        System.out.println(subject.isPermittedAll("user:update", "user:insert") ? "all" : "not all");
     }
 
     public Subject getSubject(String configFile, String name, String password){
