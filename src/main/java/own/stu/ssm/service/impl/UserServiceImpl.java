@@ -5,18 +5,35 @@ import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import own.stu.ssm.dao.IUserDao;
+import own.stu.ssm.dao.UserDao;
 import own.stu.ssm.model.User;
 import own.stu.ssm.service.IUserService;
+
+import java.util.Set;
 
 
 @Service("userService")  
 public class UserServiceImpl implements IUserService {
     @Autowired
     private IUserDao userDao;
-    
+
+    @Resource
+    private UserDao userdao;
+
     public User getUserById(int userId) {
         // TODO Auto-generated method stub  
-        return this.userDao.selectByPrimaryKey(userId);  
-    }  
-  
+        return this.userDao.selectByPrimaryKey(userId);
+    }
+
+    public User getByUserName(String userName) {
+        return userdao.getByUserName(userName);
+    }
+
+    public Set<String> getRoles(String userName) {
+        return userdao.getRoles(userName);
+    }
+
+    public Set<String> getPermissions(String userName) {
+        return userdao.getPermissions(userName);
+    }
 }  

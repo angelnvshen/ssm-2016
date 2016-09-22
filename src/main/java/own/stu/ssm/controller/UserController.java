@@ -4,6 +4,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,26 @@ public class UserController {
 
     @Resource
     private IUserService userService;
+
+    /**
+     * 用户登录
+     * @param user
+     * @param request
+     * @return
+     */
+    @RequestMapping("/login")
+    public String login(User user, HttpServletRequest request){
+        Subject subject= SecurityUtils.getSubject();
+        UsernamePasswordToken token=new UsernamePasswordToken(user.getUserName(), user.getPassword());
+        try {
+            subject.login(token);
+            return "redirect:/success.jsp"; //登录成功 跳转
+        }catch (Exception e){
+            e.printStackTrace();
+            request.setAttribute("errorInfo", "用户名或密码错误");
+            return  "login.jsp";
+        }
+    }
 
     @RequestMapping(value="/test",method=RequestMethod.GET)
     public String test(HttpServletRequest request,Model model){  
@@ -114,4 +137,5 @@ public class UserController {
         FileUtils.copyInputStreamToFile(file.getInputStream(), new File("E:\\", System.currentTimeMillis() + file.getOriginalFilename()));
         return "success";
     }
+    
 }
