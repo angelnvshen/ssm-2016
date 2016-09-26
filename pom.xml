@@ -6,8 +6,7 @@
   <packaging>war</packaging>
   <version>0.0.1-SNAPSHOT</version>
   <name>ssm_2016 Maven Webapp</name>
-  <url>http://maven.apache.org</url>
-  <!-- 
+  <!--
   	TX, JSON, ConnectionPool, Log  back,  Auth
    -->
   <properties>  
@@ -262,5 +261,20 @@
         </configuration>
       </plugin>
     </plugins>
+
+      <resources>
+          <resource>
+              <directory>src/main/resources</directory>
+              <filtering>true</filtering>
+          </resource>
+          <!--编译之后包含xml-->
+          <resource>
+              <directory>src/main/java</directory>
+              <includes>
+                  <include>**/*.xml</include>
+              </includes>
+              <filtering>true</filtering>
+          </resource>
+      </resources>
   </build>
 </project>

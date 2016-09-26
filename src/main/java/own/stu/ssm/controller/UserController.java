@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import own.stu.ssm.model.User;
 import own.stu.ssm.service.IUserService;
+import own.stu.ssm.util.CrypographyUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,14 +41,15 @@ public class UserController {
     @RequestMapping("/login")
     public String login(User user, HttpServletRequest request){
         Subject subject= SecurityUtils.getSubject();
+        user.setPassword(CrypographyUtil.encMd5(user.getPassword()));
         UsernamePasswordToken token=new UsernamePasswordToken(user.getUserName(), user.getPassword());
         try {
             subject.login(token);
-            return "redirect:/success.jsp"; //登录成功 跳转
+            return "redirect:/success"; //登录成功 跳转
         }catch (Exception e){
             e.printStackTrace();
             request.setAttribute("errorInfo", "用户名或密码错误");
-            return  "login.jsp";
+            return  "login";
         }
     }
 
@@ -62,11 +64,10 @@ public class UserController {
              user.setId(1);
              user.setPassword("123");
              user.setUserName("javen");
+            log.debug(user.toString());
+            model.addAttribute("user", user);
         }
-       
-        log.debug(user.toString());
-        model.addAttribute("user", user);  
-        return "index";  
+        return "index";
     }
 
     // /user/showUser?id=1

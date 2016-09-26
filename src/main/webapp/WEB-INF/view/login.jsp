@@ -12,7 +12,7 @@
 </head>
 <body>
     ${errorInfo}
-    <form action="login" method="post">
+    <form action="user/login" method="post">
         userName:<input type="text" name="userName" /> <br>
         password:<input type="password" name="password" /> <br>
         <input type="submit" name="submit" value="提交" />
