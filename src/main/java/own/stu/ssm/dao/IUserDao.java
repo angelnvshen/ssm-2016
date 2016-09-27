@@ -3,7 +3,7 @@ package own.stu.ssm.dao;
 import org.springframework.stereotype.Repository;
 import own.stu.ssm.model.User;
 
-@Repository
+// @Repository
 public interface IUserDao {
     int deleteByPrimaryKey(Integer id);
 

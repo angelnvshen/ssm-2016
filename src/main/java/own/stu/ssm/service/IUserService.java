@@ -1,11 +1,11 @@
 package own.stu.ssm.service;
 
+import own.stu.ssm.model.People;
 import own.stu.ssm.model.User;
 
 import java.util.Set;
 
-public interface IUserService {
-    public User getUserById(int userId);
+public interface IUserService  extends IService<User>{
 
     /**
      * 通过用户名查询用户

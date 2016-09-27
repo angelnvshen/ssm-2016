@@ -7,6 +7,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.web.util.SavedRequest;
+import org.apache.shiro.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,27 +34,6 @@ public class UserController {
     @Resource
     private IUserService userService;
 
-    /**
-     * 用户登录
-     * @param user
-     * @param request
-     * @return
-     */
-    @RequestMapping("/login")
-    public String login(User user, HttpServletRequest request){
-        Subject subject= SecurityUtils.getSubject();
-        user.setPassword(CrypographyUtil.encMd5(user.getPassword()));
-        UsernamePasswordToken token=new UsernamePasswordToken(user.getUserName(), user.getPassword());
-        try {
-            subject.login(token);
-            return "redirect:/success"; //登录成功 跳转
-        }catch (Exception e){
-            e.printStackTrace();
-            request.setAttribute("errorInfo", "用户名或密码错误");
-            return  "login";
-        }
-    }
-
     @RequestMapping(value="/test",method=RequestMethod.GET)
     public String test(HttpServletRequest request,Model model){  
         int userId = Integer.parseInt(request.getParameter("id"));  
@@ -75,7 +56,7 @@ public class UserController {
     public String toIndex(HttpServletRequest request,Model model){
         int userId = Integer.parseInt(request.getParameter("id"));
         System.out.println("userId:"+userId);
-        User user = this.userService.getUserById(userId);
+        User user = this.userService.selectByKey(userId);
         log.debug(user.toString());
         model.addAttribute("user", user);
         return "showUser";
@@ -86,7 +67,7 @@ public class UserController {
     public String toIndex2(@RequestParam("id") String id,Model model){
         int userId = Integer.parseInt(id);
         System.out.println("userId:"+userId);
-        User user = this.userService.getUserById(userId);
+        User user = this.userService.selectByKey(userId);
         log.debug(user.toString());
         model.addAttribute("user", user);
         return "showUser";
@@ -97,7 +78,7 @@ public class UserController {
     public String toIndex3(@PathVariable("id")String id,Map<String, Object> model){
         int userId = Integer.parseInt(id);
         System.out.println("userId:"+userId);
-        User user = this.userService.getUserById(userId);
+        User user = this.userService.selectByKey(userId);
         log.debug(user.toString());
         model.put("user", user);
         return "showUser";
@@ -109,7 +90,7 @@ public class UserController {
     public User getUserInJson(@PathVariable String id,Map<String, Object> model){
         int userId = Integer.parseInt(id);
         System.out.println("userId:"+userId);
-        User user = this.userService.getUserById(userId);
+        User user = this.userService.selectByKey(userId);
         log.info(user.toString());
         return user;
     }
@@ -119,7 +100,7 @@ public class UserController {
     public ResponseEntity<User>  getUserInJson2(@PathVariable String id,Map<String, Object> model){
         int userId = Integer.parseInt(id);
         System.out.println("userId:"+userId);
-        User user = this.userService.getUserById(userId);
+        User user = this.userService.selectByKey(userId);
         log.info(user.toString());
         return new ResponseEntity<User>(user, HttpStatus.OK);
     }

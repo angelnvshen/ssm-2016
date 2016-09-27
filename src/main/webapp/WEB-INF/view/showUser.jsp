@@ -8,5 +8,7 @@
     
   <body>  
     ${user.userName}
+    <br>
+  ${people.userName}
   </body>  
 </html>  

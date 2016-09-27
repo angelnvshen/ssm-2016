@@ -13,19 +13,12 @@ import java.util.Set;
 
 
 @Service("userService")  
-public class UserServiceImpl implements IUserService {
-    @Autowired
-    private IUserDao userDao;
+public class UserServiceImpl  extends BaseService<User> implements  IUserService {
 
-    @Resource
-    private UserDao userdao;
+   @Resource
+   private UserDao userdao;
 
-    public User getUserById(int userId) {
-        // TODO Auto-generated method stub  
-        return this.userDao.selectByPrimaryKey(userId);
-    }
-
-    public User getByUserName(String userName) {
+   public User getByUserName(String userName) {
         return userdao.getByUserName(userName);
     }
 
