@@ -13,17 +13,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import own.stu.ssm.model.People;
 import own.stu.ssm.model.User;
 import own.stu.ssm.service.IPeopleService;
 import own.stu.ssm.service.IUserService;
 import own.stu.ssm.util.CrypographyUtil;
+import own.stu.ssm.util.UUIDGeneratorUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @Controller
@@ -47,6 +50,7 @@ public class PeopleController {
     @RequestMapping("/save")
     public String save(Model model){
         People p = new People();
+        p.setId(UUIDGeneratorUtils.uuid32());
         p.setAge(21);
         p.setPassWord("123456");
         p.setUserName("MENG");
@@ -61,5 +65,23 @@ public class PeopleController {
     public String delete(Integer id) {
         peopleService.delete(id);
         return index;
+    }
+
+    @ResponseBody
+    @RequestMapping("app-xxxx")
+    public String getLanguageChargeInfo(@RequestParam("language") String language){
+        //final String uri = "http://localhost:9090/lytmanage/load-languageCharge";
+        final String uri = "http://localhost:9090/lytmanage/load-languageCharge/{language}.json";
+
+        
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("language", "中文");
+        String result = "";
+        RestTemplate restTemplate = new RestTemplate();
+        //result = restTemplate.postForObject(uri, language, String.class);
+        result = restTemplate.getForObject(uri, String.class, params);
+
+        System.out.println(result);
+        return result;
     }
 }
