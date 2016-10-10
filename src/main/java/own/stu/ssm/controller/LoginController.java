@@ -57,6 +57,7 @@ public class LoginController {
      */
     @RequestMapping("/loginOn")
     public String login(User user, HttpServletRequest request){
+        System.out.println(user);
         Subject subject= SecurityUtils.getSubject();
         user.setPassword(CrypographyUtil.encMd5(user.getPassword()));
         UsernamePasswordToken token=new UsernamePasswordToken(user.getUserName(), user.getPassword());

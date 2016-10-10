@@ -48,6 +48,7 @@ public class UserController {
             log.debug(user.toString());
             model.addAttribute("user", user);
         }
+        //int i = 4/0;
         return "index";
     }
 
