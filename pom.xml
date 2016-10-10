@@ -9,7 +9,9 @@
   <!--
   	TX, JSON, ConnectionPool, Log  back,  Auth
    -->
-  <properties>  
+  <properties>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- spring版本号 -->  
         <spring.version>4.1.6.RELEASE</spring.version> 
         <!-- mybatis版本号 -->  
