@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -47,6 +48,21 @@ public class PeopleController {
         return index;
     }
 
+    @RequestMapping("/list")
+    public String getList(People people,
+                          @RequestParam(required = false, defaultValue = "1") int page ,
+                          @RequestParam(required = false, defaultValue = "10") int rows,
+                          Model model){
+
+        List<People> lst = peopleService.selectByCountry(people, page, rows);
+
+        model.addAttribute("list", lst);
+        model.addAttribute("page", page);
+        model.addAttribute("rows", rows);
+
+        return index;
+    }
+
     @RequestMapping("/save")
     public String save(Model model){
         People p = new People();
@@ -56,6 +72,7 @@ public class PeopleController {
         p.setUserName("MENG");
         int result = peopleService.save(p);
 
+        int i = 3/0;
         model.addAttribute("result", result);
         model.addAttribute("people", p);
         return index;
