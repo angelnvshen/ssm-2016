@@ -12,6 +12,7 @@ import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +69,7 @@ public class PeopleController {
         return index;
     }
 
+    //@Transactional
     @RequestMapping("/save")
     public String save(Model model){
         People p = new People();
@@ -77,7 +79,7 @@ public class PeopleController {
         p.setUserName("MENG");
         int result = peopleService.save(p);
 
-        int i = 3/0;
+        int i = 4/0;
         model.addAttribute("result", result);
         model.addAttribute("people", p);
         return index;

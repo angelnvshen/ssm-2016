@@ -15,7 +15,12 @@
     <mvc:annotation-driven/>
     <!-- 静态资源处理  css js imgs -->
     <mvc:resources location="/static/" mapping="/static/**"/>
-    
+
+    <context:component-scan base-package="own.stu.ssm.controller" />
+
+    <!--         注册注解配置 -->
+    <context:annotation-config/>
+
     <!--避免IE执行AJAX时，返回JSON出现下载文件 -->  
     <bean id="mappingJacksonHttpMessageConverter"  
         class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">  
