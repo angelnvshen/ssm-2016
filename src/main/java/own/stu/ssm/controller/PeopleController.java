@@ -69,7 +69,7 @@ public class PeopleController {
         return index;
     }
 
-    //@Transactional
+    @Transactional
     @RequestMapping("/save")
     public String save(Model model){
         People p = new People();
@@ -82,6 +82,13 @@ public class PeopleController {
         int i = 4/0;
         model.addAttribute("result", result);
         model.addAttribute("people", p);
+        return index;
+    }
+
+    @RequestMapping("/testTransaction")
+    public String testTransaction(){
+        String xx =  peopleService.testTransaction();
+        System.out.println(xx);
         return index;
     }
 

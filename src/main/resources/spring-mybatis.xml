@@ -19,19 +19,23 @@
     <context:component-scan base-package="own.stu.ssm.service" />
     
     <!-- 引入配置文件 -->  
-    <bean id="propertyConfigurer"  
+    <bean id="propertyConfigurer"
         class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
         <property name="location" value="classpath:jdbc.properties" />  
-    </bean>  
-  
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"  
-        destroy-method="close">  
-        <property name="driverClassName" value="${driver}" />  
+    </bean>
+
+    <!--<context:property-placeholder location="classpath:jdbc.properties"/>-->
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${driver}" />
         <property name="url" value="${mysql_url}" />
         <property name="username" value="${username}" />
         <property name="password" value="${password}" />
+
+        <property name="filters" value="stat"/>
+
         <!-- 初始化连接大小 -->  
-        <property name="initialSize" value="${initialSize}"></property>  
+        <property name="initialSize" value="1"></property>
         <!-- 连接池最大数量 -->  
         <property name="maxActive" value="${maxActive}"></property>  
         <!-- 连接池最大空闲 -->  
@@ -84,14 +88,20 @@
         <!-- 3.2.2版本新特性，markerInterface可以起到mappers配置的作用，详细情况需要看Marker接口类 -->
         <property name="markerInterface" value="own.stu.ssm.util.CommonMapper"/>
     </bean>
-  
+
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate" scope="prototype">
+        <constructor-arg index="0" ref="sqlSessionFactory"/>
+    </bean>
+
     <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->  
-    <bean id="transactionManager"  
-        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource" />  
     </bean>
 
     <aop:aspectj-autoproxy/>
+
+    <!-- 使用annotation定义事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
 
     <aop:config>
         <aop:pointcut id="appService" expression="execution(* own.stu.ssm.service..*Service*.*(..))"/>
@@ -107,6 +117,4 @@
         </tx:attributes>
     </tx:advice>
 
-    <!-- 使用annotation定义事务 -->
-    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
-</beans>  
+</beans>

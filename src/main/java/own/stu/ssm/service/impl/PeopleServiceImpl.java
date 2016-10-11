@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import org.springframework.stereotype.Service;
 import own.stu.ssm.model.People;
 import own.stu.ssm.service.IPeopleService;
+import own.stu.ssm.util.UUIDGeneratorUtils;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -30,5 +31,18 @@ public class PeopleServiceImpl extends BaseService<People> implements IPeopleSer
         //分页查询
         PageHelper.startPage(page, rows);
         return selectByExample(example);
+    }
+
+    @Override
+    public String testTransaction(){
+        People p = new People();
+        p.setId(UUIDGeneratorUtils.uuid32());
+        p.setAge(21);
+        p.setPassWord("123456");
+        p.setUserName("MENG");
+        int result = save(p);
+
+        int i = 4/0;
+        return "xxx";
     }
 }

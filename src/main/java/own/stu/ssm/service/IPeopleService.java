@@ -16,4 +16,6 @@ public interface IPeopleService extends IService<People>{
      * @return
      */
     List<People> selectByCountry(People people, int page, int rows);
-}  
+
+    public String testTransaction();
+}
