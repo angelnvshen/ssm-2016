@@ -8,10 +8,12 @@ import org.apache.shiro.web.util.SavedRequest;
 import org.apache.shiro.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,12 +22,15 @@ import own.stu.ssm.model.User;
 import own.stu.ssm.service.IPeopleService;
 import own.stu.ssm.service.IUserService;
 import own.stu.ssm.util.CrypographyUtil;
+import own.stu.ssm.util.DateEditor;
 import own.stu.ssm.util.UUIDGeneratorUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,4 +106,17 @@ public class PeopleController {
         System.out.println(result);
         return result;
     }
+
+    @InitBinder
+    public void initBinder(ServletRequestDataBinder binder){
+//        binder.registerCustomEditor(Date.class, new CustomDateEditor(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"), true));
+        binder.registerCustomEditor(Date.class, new DateEditor());
+    }
+
+    @RequestMapping("/date")
+    public String testInitBinder(Date date){
+        System.out.println(date);
+        return "index";
+    }
+
 }

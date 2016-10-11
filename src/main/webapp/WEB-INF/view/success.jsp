@@ -10,6 +10,7 @@
 <html>
 <head>
     <title></title>
+    <script src="${pageContext.request.contextPath}/static/js/jquery-1.11.1.min.js"></script>
 </head>
 <body>
     success

@@ -38,6 +38,7 @@
                 /admin/** = authc, roles[admin]
                 /student=roles[teacher]
                 /** = authc
+                /** = authc
             </value>
         </property>
     </bean>
