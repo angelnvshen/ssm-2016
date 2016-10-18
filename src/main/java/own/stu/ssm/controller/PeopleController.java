@@ -128,4 +128,9 @@ public class PeopleController {
         return "index";
     }
 
+    @ResponseBody
+    @RequestMapping("/testEncoding")
+    public String testChineseEncoding(){
+        return "你好";
+    }
 }
