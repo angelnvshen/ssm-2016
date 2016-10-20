@@ -125,7 +125,7 @@ public class PeopleController {
     @RequestMapping("/date")
     public String testInitBinder(Date date){
         System.out.println(date);
-        return "validate_1";
+        return "moduleTest";
     }
 
     @ResponseBody
