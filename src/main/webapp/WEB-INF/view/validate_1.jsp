@@ -1,9 +1,9 @@
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <html>
 
-    <script src="${pageContext.request.contextPath}/static/js/jquery-1.11.1.min.js"></script>
-    <script src="${pageContext.request.contextPath}/static/js/jquery.validate.min.js"></script>
-    <script src="${pageContext.request.contextPath}/static/js/messages_zh.js"></script>
+    <script src="${pageContext.request.contextPath}/static/js/lib/jquery-1.11.1.min.js"></script>
+    <script src="${pageContext.request.contextPath}/static/js/lib/jquery.validate.min.js"></script>
+    <script src="${pageContext.request.contextPath}/static/js/lib/messages_zh.js"></script>
     <script>
    /*
     * 默认的submit
