@@ -125,12 +125,19 @@ public class PeopleController {
     @RequestMapping("/date")
     public String testInitBinder(Date date){
         System.out.println(date);
-        return "moduleTest";
+        return "validate_2";
     }
 
     @ResponseBody
     @RequestMapping("/testEncoding")
     public String testChineseEncoding(){
         return "你好";
+    }
+
+    @ResponseBody
+    @RequestMapping("/emailValidate")
+    public String testEmailValidate(String email, String flag){
+        System.out.println(email);
+        return flag;
     }
 }
