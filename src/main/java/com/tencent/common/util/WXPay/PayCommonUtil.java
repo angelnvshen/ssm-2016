@@ -46,21 +46,25 @@ public class PayCommonUtil {
      *            请求参数 
      * @return 
      */  
-    public static String createSign(String characterEncoding, Map<Object, Object> packageParams, String API_KEY) {
-        StringBuffer sb = new StringBuffer();  
-        Set es = packageParams.entrySet();  
-        Iterator it = es.iterator();  
-        while (it.hasNext()) {  
-            Map.Entry entry = (Map.Entry) it.next();  
-            String k = (String) entry.getKey();  
-            String v = (String) entry.getValue();  
-            if (null != v && !"".equals(v) && !"sign".equals(k) && !"key".equals(k)) {  
-                sb.append(k + "=" + v + "&");  
-            }  
-        }  
-        sb.append("key=" + API_KEY);  
-        String sign = MD5Util.MD5Encode(sb.toString(), characterEncoding).toUpperCase();  
-        return sign;  
+    public static String createSign(String characterEncoding, Map<String, Object> packageParams, String API_KEY) {
+        ArrayList<String> list = new ArrayList<String>();
+        for(Map.Entry<String,Object> entry:packageParams.entrySet()){
+            //if(entry.getValue()!="" ){
+            if (null != entry.getValue() && !"".equals(entry.getValue()) && !"sign".equals(entry.getKey()) && !"key".equals(entry.getKey())) {
+                    list.add(entry.getKey() + "=" + entry.getValue() + "&");
+            }
+        }
+        int size = list.size();
+        String [] arrayToSort = list.toArray(new String[size]);
+        Arrays.sort(arrayToSort, String.CASE_INSENSITIVE_ORDER);
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < size; i ++) {
+            sb.append(arrayToSort[i]);
+        }
+        String result = sb.toString();
+        result += "key=" + API_KEY;
+        result = MD5Util.MD5Encode(result, characterEncoding).toUpperCase();
+        return result;
     }  
   
     /** 
@@ -107,8 +111,18 @@ public class PayCommonUtil {
             num = num * 10;  
         }  
         return (int) ((random * num));  
-    }  
-  
+    }
+
+    //随机字符串，不长于32 位 - 统一一个
+    public static String geneStr(){
+
+        String currTime = PayCommonUtil.getCurrTime();
+        String strTime = currTime.substring(8, currTime.length());
+        String strRandom = PayCommonUtil.buildRandom(4) + "";
+        String result = strTime + strRandom;
+        return result;
+    }
+
     /** 
      * 获取当前时间 yyyyMMddHHmmss 
      *  
@@ -144,7 +158,7 @@ public class PayCommonUtil {
      *  获得符合 <code>InetAddress instanceof Inet4Address</code> 条件的一个IpV4地址
      * @return
      */
-    private String localIp() throws Exception{
+    public static String localIp() throws Exception{
         String ip = null;
         Enumeration allNetInterfaces;
         try {
@@ -160,7 +174,6 @@ public class PayCommonUtil {
                 }
             }
         } catch (SocketException e) {
-            logger.warn("获取本机Ip失败:异常信息:"+e.getMessage());
             throw new Exception(e.getMessage());
         }
         return ip;

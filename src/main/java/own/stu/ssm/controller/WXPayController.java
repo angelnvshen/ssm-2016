@@ -3,10 +3,17 @@ package own.stu.ssm.controller;
 import com.github.pagehelper.StringUtil;
 import com.tencent.common.util.QRCode.QRCodeUtil;
 import com.tencent.common.util.WXPay.*;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import own.stu.ssm.model.pay_protocol.ScanPayReqData;
+import own.stu.ssm.model.pay_protocol.ScanPayResData;
+import own.stu.ssm.model.pay_query_protocol.ScanPayQueryReqData;
+import own.stu.ssm.model.pay_query_protocol.ScanPayQueryResData;
 import own.stu.ssm.util.ImageToBase64;
 
 import javax.imageio.ImageIO;
@@ -15,6 +22,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
+
+import static java.lang.Thread.sleep;
 
 /**
  * Created by dell on 2016/10/25.
@@ -25,68 +34,151 @@ public class WXPayController {
 
     protected final Logger logger = Logger.getLogger(getClass());
 
+    //每次调用订单查询API时的等待时间，因为当出现支付失败的时候，如果马上发起查询不一定就能查到结果，所以这里建议先等待一定时间再发起查询
+
+    private int waitingTimeBeforePayQueryServiceInvoked = 5000;
+    
     @ResponseBody
     @RequestMapping("/pay")
-    public String weixin_pay(HttpServletResponse response, HttpServletRequest request) throws Exception {
-        // 账号信息
-        String appid = PayConfigUtil.getAppID();  // appid
-        //String appsecret = PayConfigUtil.APP_SECRET; // appsecret
-        String mch_id = PayConfigUtil.getMchID(); // 商业号
-        String key = PayConfigUtil.getKey(); // key
+    public Msg weixinPay(ScanPayReqData scanPayReqData, HttpServletRequest request) throws Exception {
 
-        String currTime = PayCommonUtil.getCurrTime();
-        String strTime = currTime.substring(8, currTime.length());
-        String strRandom = PayCommonUtil.buildRandom(4) + "";
-        String nonce_str = strTime + strRandom;
+        //商品名称
+        if (StringUtil.isEmpty(scanPayReqData.getBody())) {
+            return new Msg("0", "body字段不能为空.");
+        }
 
-        String order_price = "1"; // 价格   注意：价格的单位是分
-        String body = "goodssssss";   // 商品名称
-        String out_trade_no = "113382"; // 订单号
+        //商品价格
+        if (scanPayReqData.getTotal_fee() <= 0) {
+            return new Msg("0", "total_fee字段应为正整数.");
+        }
+        //订单号
+        if (StringUtil.isEmpty(scanPayReqData.getOut_trade_no())) {
+            return new Msg("0", "out_trade_no字段不能为空.");
+        }
 
-        // 获取发起电脑 ip
-        String spbill_create_ip = PayConfigUtil.getIp();
-        // 回调接口
-        String notify_url = PayConfigUtil.getNotifyUrl();
-        String trade_type = "NATIVE";
+        //TODO 根据订单生成流水号，插入对应的表
+
+        //构造请求“被扫支付API”所需要提交的数据
+        scanPayReqData.setInfo(scanPayReqData.getBody(), scanPayReqData.getOut_trade_no(), scanPayReqData.getTotal_fee());
+
+        return weixin_pay(scanPayReqData, request);
+    }
+
+    public Msg weixin_pay(ScanPayReqData scanPayReqData, HttpServletRequest request) throws Exception {
 
         SortedMap<Object,Object> packageParams = new TreeMap<Object,Object>();
-        packageParams.put("appid", appid);
-        packageParams.put("mch_id", mch_id);
-        packageParams.put("nonce_str", nonce_str);
-        packageParams.put("body", body);
-        packageParams.put("out_trade_no", out_trade_no);
-        packageParams.put("total_fee", order_price);
-        packageParams.put("spbill_create_ip", spbill_create_ip);
-        packageParams.put("notify_url", notify_url);
-        packageParams.put("trade_type", trade_type);
+        packageParams.put("appid", scanPayReqData.getAppid());
+        packageParams.put("mch_id", scanPayReqData.getMch_id());
+        packageParams.put("nonce_str", scanPayReqData.getNonce_str());
+        packageParams.put("body", scanPayReqData.getBody());
+        packageParams.put("out_trade_no", scanPayReqData.getOut_trade_no());
+        packageParams.put("total_fee", scanPayReqData.getTotal_fee()+"");
+        packageParams.put("spbill_create_ip", scanPayReqData.getSpbill_create_ip());
+        packageParams.put("notify_url", scanPayReqData.getNotify_url());
+        packageParams.put("trade_type", scanPayReqData.getTrade_type());
 
-        String sign = PayCommonUtil.createSign("UTF-8", packageParams, key);
-        packageParams.put("sign", sign);
+        packageParams.put("sign", scanPayReqData.getSign());
 
         String requestXML = PayCommonUtil.getRequestXml(packageParams);
-        System.out.println(requestXML);
+        logger.info("post的数据 ：" + requestXML);
 
         String resXml = HttpUtil.postData(PayConfigUtil.UFDODER_URL, requestXML);
 
-        Map map = XMLUtil.doXMLParse(resXml);
-        if(map != null){
-            if("SUCCESS".equals(map.get("return_code")) && StringUtil.isNotEmpty((String)map.get("code_url"))){
-                String urlCode = (String) map.get("code_url");
-                //GenerateQrCodeUtil.encodeQrcode(urlCode, response);
+        //将从API返回的XML数据映射到Java对象
+        ScanPayResData scanPayResData = (ScanPayResData) Util.getObjectFromXML(resXml, ScanPayResData.class);
 
-
-                String logoPath = request.getServletContext().getRealPath("/") + "/static/image/timg.jpg";
-
-                BufferedImage image = QRCodeUtil.createImage(urlCode, logoPath, true);
-
-                return ImageToBase64.getImageBinary(image);
-            }else
-                return "return_code : " + map.get("return_code") + " , return_msg : " + map.get("return_msg");
+        String msg = "";
+        if (scanPayResData == null || scanPayResData.getReturn_code() == null) {
+            
+            logger.error(msg = "【支付失败】支付请求逻辑错误，请仔细检测传过去的每一个参数是否合法，或是看API能否被正常访问");
+            return new Msg("0", msg);
         }
 
-        return "FAIL";
+        if (scanPayResData.getReturn_code().equals("FAIL")) {
+            //注意：一般这里返回FAIL是出现系统级参数错误，请检测Post给API的数据是否规范合法
+            logger.error(msg = "【支付失败】支付API系统返回失败，请检测Post给API的数据是否规范合法");
+            return new Msg("0", msg);
+        } else {
+            logger.info("支付API系统成功返回数据");
+            //--------------------------------------------------------------------
+            //收到API的返回数据的时候得先验证一下数据有没有被第三方篡改，确保安全
+            //--------------------------------------------------------------------
+            /*if (!Signature.checkIsSignValidFromResponseString(payServiceResponseString)) {
+                logger.error("【支付失败】支付请求API返回的数据签名验证失败，有可能数据被篡改了");
+                resultListener.onFailBySignInvalid(scanPayResData);
+                return;
+            }*/
+
+            //获取错误码
+            String errorCode = scanPayResData.getErr_code();
+            //获取错误描述
+            String errorCodeDes = scanPayResData.getErr_code_des();
+
+            if (scanPayResData.getResult_code().equals("SUCCESS")) {
+
+                logger.info("返回预支付链接成功");
+                logger.info("预支付链接 ： " + scanPayResData.getCode_url());
+                String result = generateQRCodeBaseStr(scanPayResData.getCode_url(), request);
+                return new Msg("1", result);
+            } else {
+
+                //出现业务错误
+                logger.info("业务返回失败");
+                logger.info("err_code:" + errorCode);
+                logger.info("err_code_des:" + errorCodeDes);
+                return new Msg("1", errorCodeDes);
+            }
+        }
     }
 
+    /**
+     * 将微信返回的预支付链接生成二维码，并将二维码转为base64格式的字符串
+     * @return
+     */
+    private String generateQRCodeBaseStr(String code_url, HttpServletRequest request) throws Exception {
+
+        String logoPath = request.getServletContext().getRealPath("/") + "/static/image/timg.jpg";
+        logger.info("嵌入二维码的图片地址：" + logoPath);
+        System.out.println(request.getContextPath());
+        System.out.println(request.getServletContext().getRealPath("/"));
+
+        BufferedImage image = QRCodeUtil.createImage(code_url, logoPath, true);
+
+        return ImageToBase64.getImageBinary(image);
+    }
+
+    class Msg{
+        private String state;
+        private String message;
+
+        public String getState() {
+            return state;
+        }
+
+        public void setState(String state) {
+            this.state = state;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public Msg(String state, String message) {
+            this.state = state;
+            this.message = message;
+        }
+    }
+
+    /**
+     * 微信回调异步通知
+     * @param request
+     * @param response
+     * @throws Exception
+     */
     @RequestMapping("/notify")
     public void weixin_notify(HttpServletRequest request,HttpServletResponse response) throws Exception{
 
@@ -169,6 +261,64 @@ public class WXPayController {
         } else{
             logger.info("通知签名验证失败");
         }
+    }
 
+    /**
+     * 进行一次支付订单查询操作
+     *
+     * @param outTradeNo    商户系统内部的订单号,32个字符内可包含字母, [确保在商户系统唯一]
+     * @return 该订单是否支付成功
+     * @throws Exception
+     */
+    @ResponseBody
+    @RequestMapping("/payQuery")
+    public boolean doOnePayQuery(String outTradeNo) throws Exception {
+        sleep(waitingTimeBeforePayQueryServiceInvoked);//等待一定时间再进行查询，避免状态还没来得及被更新
+
+        String payQueryServiceResponseString;
+
+        ScanPayQueryReqData scanPayQueryReqData = new ScanPayQueryReqData("",outTradeNo);
+
+
+        //解决XStream对出现双下划线的bug
+        XStream xStreamForRequestPostData = new XStream(new DomDriver("UTF-8", new XmlFriendlyNameCoder("-_", "_")));
+
+        //将要提交给API的数据对象转换成XML格式数据Post给API
+        String postDataXML = xStreamForRequestPostData.toXML(scanPayQueryReqData);
+
+        Util.log("API，POST过去的数据是：");
+        Util.log(postDataXML);
+        payQueryServiceResponseString = HttpUtil.postData(PayConfigUtil.PAY_QUERY_API, postDataXML);
+
+         logger.info("支付订单查询API返回的数据如下：");
+         logger.info(payQueryServiceResponseString);
+
+        //将从API返回的XML数据映射到Java对象
+        ScanPayQueryResData scanPayQueryResData = (ScanPayQueryResData) Util.getObjectFromXML(payQueryServiceResponseString, ScanPayQueryResData.class);
+        if (scanPayQueryResData == null || scanPayQueryResData.getReturn_code() == null) {
+             logger.info("支付订单查询请求逻辑错误，请仔细检测传过去的每一个参数是否合法");
+            return false;
+        }
+
+        if (scanPayQueryResData.getReturn_code().equals("FAIL")) {
+            //注意：一般这里返回FAIL是出现系统级参数错误，请检测Post给API的数据是否规范合法
+             logger.info("支付订单查询API系统返回失败，失败信息为：" + scanPayQueryResData.getReturn_msg());
+            return false;
+        } else {
+            if (scanPayQueryResData.getResult_code().equals("SUCCESS")) {//业务层成功
+                if (scanPayQueryResData.getTrade_state().equals("SUCCESS")) {
+                    //表示查单结果为“支付成功”
+                     logger.info("查询到订单支付成功");
+                    return true;
+                } else {
+                    //支付不成功
+                     logger.info("查询到订单支付不成功");
+                    return false;
+                }
+            } else {
+                 logger.info("查询出错，错误码：" + scanPayQueryResData.getErr_code() + "     错误信息：" + scanPayQueryResData.getErr_code_des());
+                return false;
+            }
+        }
     }
 }
