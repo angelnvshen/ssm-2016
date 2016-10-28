@@ -1,4 +1,4 @@
-package com.tencent.common.util.WXPay;
+package sdk.tencent.common.util;
 
 /**
  * User: rizenguo
@@ -17,7 +17,7 @@ public class PayConfigUtil {
     private static String key = "AAAAAABBBBBBPPPPPPFFFFFFMMMMMMKK";
 
     //微信分配的公众号ID（开通公众号之后可以获取到）
-    private static String appID = "wx4e95613adfc8c67a";
+    private static String appID = "1312715001";
 
     //微信支付分配的商户号ID（开通公众号的微信支付功能之后可以获取到）
     private static String mchID = "1312715001";
@@ -26,7 +26,7 @@ public class PayConfigUtil {
     private static String subMchID = "";
 
     //HTTPS证书的本地路径
-    private static String certLocalPath = "E:\\cert\\apiclient_cert.p12";
+    private static String certLocalPath = "E:\\cert";
 
     //HTTPS证书密码，默认密码等于商户号MCHID
     private static String certPassword = "1312715001";
@@ -38,9 +38,9 @@ public class PayConfigUtil {
     private static String ip = "172.16.133.70";
 
     //回调的url
-    private static String NOTIFY_URL = "http://172.16.133.70:8888/WX/notify";
+    private static String NOTIFY_URL = "172.16.133.70";
 
-    public static String UFDODER_URL = "https://api.mch.weixin.qq.com/pay/unifiedorder";
+    public static String UFDODER_URLgetk = "https://api.mch.weixin.qq.com/pay/unifiedorder";
 
     //以下是几个API的路径：
     //1）被扫支付API

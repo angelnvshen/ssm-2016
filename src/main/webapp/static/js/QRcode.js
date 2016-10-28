@@ -1,7 +1,7 @@
 $(function(){
     $("#submit").click(function(){
         $.ajax({
-            url: ctx + "WX/pay",
+            url: ctx + "WXSDK/pay",
             data:{
                 body:"a pen",
                 total_fee : 1,
